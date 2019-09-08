@@ -47,6 +47,10 @@ namespace SpiderControllerPlatform
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
+            DefaultFilesOptions defaultFilesOptions = new DefaultFilesOptions();
+            defaultFilesOptions.DefaultFileNames.Clear();
+            defaultFilesOptions.DefaultFileNames.Add("html/index.html");
+            app.UseDefaultFiles(defaultFilesOptions);
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
