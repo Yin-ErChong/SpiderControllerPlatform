@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29201.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpiderControllerPlatform", "SpiderControllerPlatform\SpiderControllerPlatform.csproj", "{5B21BEF3-7312-4C46-A80F-AA1222DC5BD2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpiderControllerPlatform", "SpiderControllerPlatform\SpiderControllerPlatform.csproj", "{5B21BEF3-7312-4C46-A80F-AA1222DC5BD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpiderDal", "SpiderDal\SpiderDal.csproj", "{545485BA-31C3-458A-98F6-151EBE4258ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpiderUtil", "SpiderDal\SpiderUtil.csproj", "{545485BA-31C3-458A-98F6-151EBE4258ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
