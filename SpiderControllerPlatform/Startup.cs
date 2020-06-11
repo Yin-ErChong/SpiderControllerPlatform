@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SpiderUtil.TCP_UDPHelper;
 
 namespace SpiderControllerPlatform
 {
@@ -17,6 +18,8 @@ namespace SpiderControllerPlatform
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            TcpHelper tcpHelper = new TcpHelper();
+            tcpHelper.OpenServer(2624);
         }
 
         public IConfiguration Configuration { get; }
