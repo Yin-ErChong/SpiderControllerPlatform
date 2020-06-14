@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using log4net;
+using log4net.Config;
+using log4net.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -9,19 +13,38 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SpiderUtil;
 using SpiderUtil.TCP_UDPHelper;
 
 namespace SpiderControllerPlatform
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public static ILoggerRepository repository { get; set; }
+        private  IHostingEnvironment _hostingEnvironment { get; set; }
+        public Startup(IConfiguration configuration, IHostingEnvironment hostingEnvironment)
         {
             Configuration = configuration;
+            _hostingEnvironment = hostingEnvironment;
+            LogConfig();
+            TCPConfig();
+        }
+
+        public void LogConfig()
+        {
+            // log4net 仓储
+            repository = LogManager.CreateRepository("CoreLogRepository");
+            dynamic type = (new Program()).GetType();
+            string currentDirectory = Path.GetDirectoryName(type.Assembly.Location);
+            var fileinfo = new FileInfo(currentDirectory + "\\log4net.config");
+            XmlConfigurator.Configure(repository, fileinfo);
+            Log4NetRepository.loggerRepository = repository;
+        }
+        public void TCPConfig()
+        {
             TcpHelper tcpHelper = new TcpHelper();
             tcpHelper.OpenServer(2624);
         }
-
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.

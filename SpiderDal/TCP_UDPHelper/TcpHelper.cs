@@ -31,11 +31,13 @@ namespace SpiderUtil.TCP_UDPHelper
                 IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, port);
                 try
                 {
+                    Logger.Info($"绑定端口到{endPoint.Address}:{endPoint.Port}");
                     // 将负责监听的套接字绑定到唯一的ip和端口上；
                     ServerSocket.Bind(endPoint);
                 }
                 catch (Exception ee)
                 {
+                    Logger.Error("绑定端口发生异常",ee);
                     return false;
                 }
                 // 设置监听队列的长度；
@@ -44,7 +46,6 @@ namespace SpiderUtil.TCP_UDPHelper
                 Thread Thread_ServerListen = new Thread(ListenConnecting);
                 Thread_ServerListen.IsBackground = true;
                 Thread_ServerListen.Start();
-
                 return true;
             }
             catch
@@ -147,6 +148,7 @@ namespace SpiderUtil.TCP_UDPHelper
                     lock (tcpClient.m_Buffer)
                     {
                         tcpClient.AddQueue(buf);
+                        tcpClient.Send(tcpClient.m_Buffer.ToArray());
                     }
                 }
                 catch
