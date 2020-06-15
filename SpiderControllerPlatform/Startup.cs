@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SpiderUtil;
 using SpiderUtil.TCP_UDPHelper;
+using Microsoft.OpenApi.Models;
 
 namespace SpiderControllerPlatform
 {
@@ -30,21 +31,6 @@ namespace SpiderControllerPlatform
             TCPConfig();
         }
 
-        public void LogConfig()
-        {
-            // log4net 仓储
-            repository = LogManager.CreateRepository("CoreLogRepository");
-            dynamic type = (new Program()).GetType();
-            string currentDirectory = Path.GetDirectoryName(type.Assembly.Location);
-            var fileinfo = new FileInfo(currentDirectory + "\\log4net.config");
-            XmlConfigurator.Configure(repository, fileinfo);
-            Log4NetRepository.loggerRepository = repository;
-        }
-        public void TCPConfig()
-        {
-            TcpHelper tcpHelper = new TcpHelper();
-            tcpHelper.OpenServer(2624);
-        }
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -56,7 +42,10 @@ namespace SpiderControllerPlatform
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
-
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+            });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
@@ -81,7 +70,15 @@ namespace SpiderControllerPlatform
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
+            // 启用Swagger中间件
+            app.UseSwagger();
 
+            // 配置SwaggerUI
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "CoreWebApi");
+                //c.RoutePrefix = string.Empty;
+            });
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -89,5 +86,28 @@ namespace SpiderControllerPlatform
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
         }
+        #region 组件配置       
+        /// <summary>
+        /// 日志配置
+        /// </summary>
+        public void LogConfig()
+        {
+            // log4net 仓储
+            repository = LogManager.CreateRepository("CoreLogRepository");
+            dynamic type = (new Program()).GetType();
+            string currentDirectory = Path.GetDirectoryName(type.Assembly.Location);
+            var fileinfo = new FileInfo(currentDirectory + "\\log4net.config");
+            XmlConfigurator.Configure(repository, fileinfo);
+            Log4NetRepository.loggerRepository = repository;
+        }
+        /// <summary>
+        /// 开启TCP对外端口
+        /// </summary>
+        public void TCPConfig()
+        {
+            TcpHelper tcpHelper = new TcpHelper();
+            tcpHelper.OpenServer(2624);
+        }
+        #endregion
     }
 }
