@@ -13,6 +13,7 @@ namespace SpiderControllerPlatform.Controllers
     [ApiController]
     public class TestController : Controller
     {
+        [Route(nameof(hehe))]
         [HttpGet]
         public string hehe()
         {

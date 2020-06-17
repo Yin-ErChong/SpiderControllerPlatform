@@ -11,9 +11,24 @@ namespace SpiderDal.HttpRequestHelper
 {
     class HttpRequestService
     {
-        public static PaResponse AskData(Requestmodel model)
+        public static Response Post(object data, string url)
         {
-            PaResponse _paResponse = new PaResponse();
+            Requestmodel requestModel = new Requestmodel();
+            requestModel.IsPost = true;
+            requestModel.Url = url;
+            requestModel.Data = data;
+            return AskData(requestModel);
+        }
+        public static Response Get(string url)
+        {
+            Requestmodel requestModel = new Requestmodel();
+            requestModel.IsPost = true;
+            requestModel.Url = url;
+            return AskData(requestModel);
+        }
+        public static Response AskData(Requestmodel model)
+        {
+            Response _paResponse = new Response();
             _paResponse.ErrCode = 0;
             _paResponse.ErrMsg = "成功";
 

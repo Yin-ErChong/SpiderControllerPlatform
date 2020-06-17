@@ -64,7 +64,7 @@ namespace SpiderDal.HttpRequestHelper
         public string RequestKey { get; set; }
 
     }
-    public class PaResponse
+    public class Response
     {
         /// <summary>
         /// 返回的结果
