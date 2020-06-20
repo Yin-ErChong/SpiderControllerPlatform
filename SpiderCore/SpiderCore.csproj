@@ -1,16 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="ServiceImp\" />
-    <Folder Include="ServiceInterFace\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\SpiderDal\SpiderUtil.csproj" />
+    <ProjectReference Include="..\SpiderDataBase\SpiderDataBase.csproj" />
   </ItemGroup>
 
 </Project>

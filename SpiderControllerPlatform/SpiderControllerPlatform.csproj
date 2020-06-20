@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <UserSecretsId>77d57667-bd3d-429c-af6e-a3469efeec3a</UserSecretsId>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <!--<RuntimeFrameworkVersion>2.2.8 </RuntimeFrameworkVersion>-->
+      <UserSecretsId>77d57667-bd3d-429c-af6e-a3469efeec3a</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
-
-  <ItemGroup>
+      <ItemGroup>
     <Content Remove="log4net.config" />
   </ItemGroup>
 
@@ -18,13 +18,13 @@
 
   <ItemGroup>
     <PackageReference Include="Consul" Version="1.6.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.7.12" />
+    <!--<PackageReference Include="Microsoft.AspNetCore.App"/>-->
+    <!--<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.7.12" />-->
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.4.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SpiderCore\SpiderCore.csproj" />
     <ProjectReference Include="..\SpiderDal\SpiderUtil.csproj" />
   </ItemGroup>
 

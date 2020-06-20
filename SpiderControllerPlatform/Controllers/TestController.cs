@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SpiderCore.ServiceInterFace;
+using SpiderDataBase.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,11 +15,16 @@ namespace SpiderControllerPlatform.Controllers
     [ApiController]
     public class TestController : Controller
     {
+        private IFirstTestService _firstTestService;
+        public TestController(IFirstTestService firstTestService)
+        {
+            _firstTestService = firstTestService;
+        }
         [Route(nameof(hehe))]
         [HttpGet]
-        public string hehe()
+        public async Task<User> hehe(Guid guid)
         {
-            return "成功";
+            return await _firstTestService.GetUser(guid);
         }
     }
 }

@@ -17,6 +17,10 @@ using SpiderUtil;
 using SpiderUtil.TCP_UDPHelper;
 using Microsoft.OpenApi.Models;
 using Consul;
+using Snai.Mysql.DataAccess.Base;
+using Microsoft.EntityFrameworkCore;
+using SpiderCore.ServiceInterFace;
+using SpiderCore.ServiceImp;
 
 namespace SpiderControllerPlatform
 {
@@ -43,12 +47,18 @@ namespace SpiderControllerPlatform
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
+            services.AddDbContext<DataAccess>(options => options.UseMySQL(Configuration.GetConnectionString("Connection")));
+            services.AddScoped<IFirstTestService, FirstTestService>();
+
+            //Swagger配置
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
             });
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc(options => { options.EnableEndpointRouting = false; })
+                    .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+ 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -80,6 +90,7 @@ namespace SpiderControllerPlatform
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "CoreWebApi");
                 //c.RoutePrefix = string.Empty;
             });
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
