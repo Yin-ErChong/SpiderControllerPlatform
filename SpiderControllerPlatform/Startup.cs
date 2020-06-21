@@ -47,9 +47,8 @@ namespace SpiderControllerPlatform
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
-            services.AddDbContext<DataAccess>(options => options.UseMySQL(Configuration.GetConnectionString("Connection")));
-            services.AddScoped<IFirstTestService, FirstTestService>();
 
+            EFConfig(services);
             //Swagger配置
             services.AddSwaggerGen(c =>
             {
@@ -97,9 +96,14 @@ namespace SpiderControllerPlatform
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-            Consul();
+           // Consul();
         }
-        #region 组件配置       
+        #region 组件配置  
+        public void EFConfig(IServiceCollection services)
+        {
+            services.AddDbContext<DataAccess>(options => options.UseMySQL(Configuration.GetConnectionString("Connection")));
+            services.AddScoped<IFirstTestService, FirstTestService>();
+        }
         /// <summary>
         /// 日志配置
         /// </summary>
