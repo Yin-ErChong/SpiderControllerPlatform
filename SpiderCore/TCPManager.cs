@@ -5,15 +5,17 @@ using System.Text;
 
 namespace SpiderCore
 {
-    public class TCPManager
+    public  class TCPManager
     {
-        public static TCPManager manager = new TCPManager();
+        public static TCPManager Instance = new TCPManager();
 
         public TcpHelper tcpHelper = new TcpHelper();
 
-        public  MySession GetMySession(string IP)
+        public  MySession GetMySession(string ip_Port)
         {
-            return new MySession();
+            MySession mySession;
+            tcpHelper.dic_ClientSocket.TryGetValue(ip_Port, out mySession);
+            return mySession;
         }
     }
 }

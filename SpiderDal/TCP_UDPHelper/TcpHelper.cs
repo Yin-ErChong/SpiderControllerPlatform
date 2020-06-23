@@ -16,6 +16,8 @@ namespace SpiderUtil.TCP_UDPHelper
         private Dictionary<string, Thread> dic_ClientThread = new Dictionary<string, Thread>();//线程字典,每新增一个连接就添加一条线程
         private bool Flag_Listen = true;//监听客户端连接的标志
 
+
+        #region 启动/关闭服务
         /// <summary>
         /// 启动服务
         /// </summary>
@@ -37,7 +39,7 @@ namespace SpiderUtil.TCP_UDPHelper
                 }
                 catch (Exception ee)
                 {
-                    Logger.Error("绑定端口发生异常",ee);
+                    Logger.Error("绑定端口发生异常", ee);
                     return false;
                 }
                 // 设置监听队列的长度；
@@ -80,6 +82,9 @@ namespace SpiderUtil.TCP_UDPHelper
                 ServerSocket.Close();
 
         }
+        #endregion
+
+        #region 侦听接口消息
         /// <summary>
         /// 监听客户端请求的方法；
         /// </summary>
@@ -89,21 +94,19 @@ namespace SpiderUtil.TCP_UDPHelper
             {
                 try
                 {
-                    Socket sokConnection = ServerSocket.Accept(); // 一旦监听到一个客户端的请求，就返回一个与该客户端通信的 套接字；
-                    // 将与客户端连接的 套接字 对象添加到集合中；
-                    string str_EndPoint = sokConnection.RemoteEndPoint.ToString();
+                    Socket sokConnection = ServerSocket.Accept(); // 一旦监听到一个客户端的请求，就返回一个与该客户端通信的 套接字
+
                     MySession myTcpClient = new MySession() { TcpSocket = sokConnection };
-                    //创建线程接收数据
-                    Thread th_ReceiveData = new Thread(ReceiveData);
+
+                    Thread th_ReceiveData = new Thread(ReceiveData);//创建线程接收数据
                     th_ReceiveData.IsBackground = true;
                     th_ReceiveData.Start(myTcpClient);
-                    //把线程及客户连接加入字典
-                    dic_ClientThread.Add(str_EndPoint, th_ReceiveData);
-                    dic_ClientSocket.Add(str_EndPoint, myTcpClient);
+                    //添加通信对象
+                    AddSocketObject(myTcpClient, th_ReceiveData);
                 }
-                catch
+                catch (Exception ee)
                 {
-
+                    Logger.Error("侦听客户端发生异常", ee);
                 }
                 Thread.Sleep(200);
             }
@@ -122,23 +125,21 @@ namespace SpiderUtil.TCP_UDPHelper
             {
                 try
                 {
-                    // 定义一个2M的缓存区；
-                    byte[] arrMsgRec = new byte[1024 * 1024 * 2];
+                    // 定义一个1M的缓存区；
+                    byte[] arrMsgRec = new byte[1024 * 1024 * 1];
                     // 将接受到的数据存入到输入  arrMsgRec中；
                     int length = -1;
                     try
                     {
                         length = socketClient.Receive(arrMsgRec); // 接收数据，并返回数据的长度；
                     }
-                    catch
+                    catch (Exception ee)
                     {
-                        Flag_Receive = false;
-                        // 从通信线程集合中删除被中断连接的通信线程对象；
                         string keystr = socketClient.RemoteEndPoint.ToString();
-                        dic_ClientSocket.Remove(keystr);//删除客户端字典中该socket
-                        dic_ClientThread[keystr].Abort();//关闭线程
-                        dic_ClientThread.Remove(keystr);//删除字典中该线程
-
+                        Logger.Error($"{keystr}接收发生异常，线程将结束", ee);
+                        Flag_Receive = false;
+                        // 从通信线程集合中删除被中断连接的通信线程对象；                       
+                        RemoveSocketObject(keystr);
                         tcpClient = null;
                         socketClient = null;
                         break;
@@ -150,6 +151,8 @@ namespace SpiderUtil.TCP_UDPHelper
                         tcpClient.AddQueue(buf);
                         tcpClient.Send(tcpClient.m_Buffer.ToArray());
                     }
+                    //触发接收后事件
+                    tcpClient.ReceivedAfterBegin();
                 }
                 catch
                 {
@@ -158,6 +161,33 @@ namespace SpiderUtil.TCP_UDPHelper
                 Thread.Sleep(100);
             }
         }
+        /// <summary>
+        /// 增加Socket对象
+        /// </summary>
+        /// <param name="myTcpClient"></param>
+        /// <param name="th_ReceiveData"></param>
+        private void AddSocketObject(MySession myTcpClient, Thread th_ReceiveData)
+        {
+            string str_EndPoint = myTcpClient.TcpSocket.RemoteEndPoint.ToString();
+            // 把线程及客户连接加入字典
+            dic_ClientThread.Add(str_EndPoint, th_ReceiveData);
+            dic_ClientSocket.Add(str_EndPoint, myTcpClient);
+        }
+        /// <summary>
+        /// 删除Socket对象
+        /// </summary>
+        /// <param name="str_EndPoint"></param>
+        private void RemoveSocketObject(string str_EndPoint)
+        {
+            dic_ClientSocket.Remove(str_EndPoint);//删除客户端字典中该socket
+            dic_ClientThread[str_EndPoint].Abort();//关闭线程
+            dic_ClientThread.Remove(str_EndPoint);//删除字典中该线程
+        }
+
+
+        #endregion
+
+        #region 发送消息
         /// <summary>
         /// 发送数据给指定的客户端
         /// </summary>
@@ -177,6 +207,8 @@ namespace SpiderUtil.TCP_UDPHelper
                 return false;
             }
         }
+        #endregion
+
     }
 
     /// <summary>
@@ -185,6 +217,10 @@ namespace SpiderUtil.TCP_UDPHelper
     public class MySession
     {
         public Socket TcpSocket;//socket对象
+        public delegate void ReceivedMessage(string ip_Port);
+        public event ReceivedMessage ReceivedAfter;
+
+        public string clientName { get; set; }
         public List<byte> m_Buffer = new List<byte>();//数据缓存区
 
         public MySession()
@@ -238,6 +274,15 @@ namespace SpiderUtil.TCP_UDPHelper
         public void AddQueue(byte[] buffer)
         {
             m_Buffer.AddRange(buffer);
+        }
+        public void ReceivedAfterBegin()
+        {
+            //触发接收数据后的事件
+            ReceivedAfter(TcpSocket.RemoteEndPoint.ToString());
+        }
+        public void AddEvent(ReceivedMessage receivedMessage)
+        {
+            ReceivedAfter += receivedMessage;
         }
         /// <summary>
         /// 清除缓存
