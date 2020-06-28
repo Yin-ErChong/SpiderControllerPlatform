@@ -32,8 +32,9 @@ namespace SpiderControllerPlatform
         {
             Configuration = configuration;
             _hostingEnvironment = hostingEnvironment;
-            LogConfig();
-            TCPConfig();
+            
+            LogInit();
+            TCPInit();
         }
 
         public IConfiguration Configuration { get; }
@@ -48,7 +49,7 @@ namespace SpiderControllerPlatform
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            EFConfig(services);
+            EFInit(services);
             //Swagger配置
             services.AddSwaggerGen(c =>
             {
@@ -99,15 +100,19 @@ namespace SpiderControllerPlatform
            // Consul();
         }
         #region 组件配置  
-        public void EFConfig(IServiceCollection services)
+        /// <summary>
+        /// EF框架初始化
+        /// </summary>
+        /// <param name="services"></param>
+        public void EFInit(IServiceCollection services)
         {
             services.AddDbContext<DataAccess>(options => options.UseMySQL(Configuration.GetConnectionString("Connection")));
             services.AddScoped<IFirstTestService, FirstTestService>();
         }
         /// <summary>
-        /// 日志配置
+        /// 日志初始化
         /// </summary>
-        public void LogConfig()
+        public void LogInit()
         {
             // log4net 仓储
             repository = LogManager.CreateRepository("CoreLogRepository");
@@ -118,13 +123,16 @@ namespace SpiderControllerPlatform
             Log4NetRepository.loggerRepository = repository;
         }
         /// <summary>
-        /// 开启TCP对外端口
+        /// TCP初始化
         /// </summary>
-        public void TCPConfig()
+        public void TCPInit()
         {
             TcpHelper tcpHelper = new TcpHelper();
             tcpHelper.OpenServer(2624);
         }
+        /// <summary>
+        /// Consul初始化
+        /// </summary>
         public void Consul()
         {
             String ip = Configuration["ip"];//部署到不同服务器的时候不能写成127.0.0.1或者0.0.0.0,因为这是让服务消费者调用的地址

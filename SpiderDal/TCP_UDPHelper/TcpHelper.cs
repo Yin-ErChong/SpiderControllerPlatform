@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
 using System.Net;
+using System.Text;
+using static SpiderUtil.TCP_UDPHelper.SocketDelegate;
 
 namespace SpiderUtil.TCP_UDPHelper
 {
@@ -15,8 +17,9 @@ namespace SpiderUtil.TCP_UDPHelper
         public Dictionary<string, MySession> dic_ClientSocket = new Dictionary<string, MySession>();//tcp客户端字典
         private Dictionary<string, Thread> dic_ClientThread = new Dictionary<string, Thread>();//线程字典,每新增一个连接就添加一条线程
         private bool Flag_Listen = true;//监听客户端连接的标志
-
-
+        public event ReceivedMessage ReceivedAfter;
+        public event OpenServerBefore OpenServerBefore;
+        public event OpenServerAfter OpenServerAfter;
         #region 启动/关闭服务
         /// <summary>
         /// 启动服务
@@ -42,12 +45,14 @@ namespace SpiderUtil.TCP_UDPHelper
                     Logger.Error("绑定端口发生异常", ee);
                     return false;
                 }
+                OpenServerBefore(ServerSocket);
                 // 设置监听队列的长度；
                 ServerSocket.Listen(100);
                 // 创建负责监听的线程；
                 Thread Thread_ServerListen = new Thread(ListenConnecting);
                 Thread_ServerListen.IsBackground = true;
                 Thread_ServerListen.Start();
+                OpenServerAfter(ServerSocket);
                 return true;
             }
             catch
@@ -97,6 +102,7 @@ namespace SpiderUtil.TCP_UDPHelper
                     Socket sokConnection = ServerSocket.Accept(); // 一旦监听到一个客户端的请求，就返回一个与该客户端通信的 套接字
 
                     MySession myTcpClient = new MySession() { TcpSocket = sokConnection };
+                    myTcpClient.ReceivedAfter += ReceivedAfter;
 
                     Thread th_ReceiveData = new Thread(ReceiveData);//创建线程接收数据
                     th_ReceiveData.IsBackground = true;
@@ -140,23 +146,19 @@ namespace SpiderUtil.TCP_UDPHelper
                         Flag_Receive = false;
                         // 从通信线程集合中删除被中断连接的通信线程对象；                       
                         RemoveSocketObject(keystr);
-                        tcpClient = null;
-                        socketClient = null;
-                        break;
                     }
                     byte[] buf = new byte[length];
                     Array.Copy(arrMsgRec, buf, length);
                     lock (tcpClient.m_Buffer)
                     {
                         tcpClient.AddQueue(buf);
-                        tcpClient.Send(tcpClient.m_Buffer.ToArray());
                     }
                     //触发接收后事件
                     tcpClient.ReceivedAfterBegin();
                 }
-                catch
+                catch (Exception ex)
                 {
-
+                    Logger.Error("ReceiveData发生异常", ex);
                 }
                 Thread.Sleep(100);
             }
@@ -207,17 +209,41 @@ namespace SpiderUtil.TCP_UDPHelper
                 return false;
             }
         }
+        /// <summary>
+        /// 发送数据给指定的客户端
+        /// </summary>
+        /// <param name="_endPoint">客户端套接字</param>
+        /// <param name="_buf">发送的数组</param>
+        /// <returns></returns>
+        public bool SendData(string _endPoint, string sendMessage)
+        {
+            MySession myT = new MySession();
+            if (dic_ClientSocket.TryGetValue(_endPoint, out myT))
+            {
+                myT.Send(sendMessage);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
         #endregion
 
     }
-
+    public class SocketDelegate
+    {
+        public delegate void ReceivedMessage(string ip_Port);
+        public delegate void OpenServerBefore(Socket socket);
+        public delegate void OpenServerAfter(Socket socket);
+    }
     /// <summary>
     /// 会话端
     /// </summary>
     public class MySession
     {
         public Socket TcpSocket;//socket对象
-        public delegate void ReceivedMessage(string ip_Port);
+        
         public event ReceivedMessage ReceivedAfter;
 
         public string clientName { get; set; }
@@ -227,7 +253,15 @@ namespace SpiderUtil.TCP_UDPHelper
         {
 
         }
-
+        /// <summary>
+        /// 发送数据
+        /// </summary>
+        /// <param name="sendMessage"></param>
+        public void Send(string sendMessage)
+        {
+            var bytes = Encoding.UTF8.GetBytes(sendMessage);
+            Send(bytes);
+        }
         /// <summary>
         /// 发送数据
         /// </summary>
