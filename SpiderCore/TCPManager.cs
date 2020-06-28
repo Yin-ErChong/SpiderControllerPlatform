@@ -1,6 +1,8 @@
-﻿using SpiderUtil.TCP_UDPHelper;
+﻿using SpiderUtil;
+using SpiderUtil.TCP_UDPHelper;
 using System;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using System.Text;
 
 namespace SpiderCore
@@ -14,10 +16,19 @@ namespace SpiderCore
         public TCPManager(){
             
         }
+        public void InitTCPServer()
+        {
+            tcpHelper.OpenServerBefore += test;
+        }
+        public void test(Socket socket)
+        {
+            int a = 0;
+        }
         public void OpenServer()
         {
-            tcpHelper.OpenServer(1234);
+            tcpHelper.OpenServer(Configer.TCP_Port);
         }
+
         public  MySession GetMySession(string ip_Port)
         {
             MySession mySession;

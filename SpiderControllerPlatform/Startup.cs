@@ -21,6 +21,7 @@ using Snai.Mysql.DataAccess.Base;
 using Microsoft.EntityFrameworkCore;
 using SpiderCore.ServiceInterFace;
 using SpiderCore.ServiceImp;
+using SpiderCore;
 
 namespace SpiderControllerPlatform
 {
@@ -32,7 +33,7 @@ namespace SpiderControllerPlatform
         {
             Configuration = configuration;
             _hostingEnvironment = hostingEnvironment;
-            
+            Configer.configuration = configuration;
             LogInit();
             TCPInit();
         }
@@ -127,8 +128,7 @@ namespace SpiderControllerPlatform
         /// </summary>
         public void TCPInit()
         {
-            TcpHelper tcpHelper = new TcpHelper();
-            tcpHelper.OpenServer(2624);
+            TCPManager.Instance.InitTCPServer();
         }
         /// <summary>
         /// Consul初始化

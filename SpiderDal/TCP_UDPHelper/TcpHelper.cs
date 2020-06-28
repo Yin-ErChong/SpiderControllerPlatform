@@ -45,14 +45,14 @@ namespace SpiderUtil.TCP_UDPHelper
                     Logger.Error("绑定端口发生异常", ee);
                     return false;
                 }
-                OpenServerBefore(ServerSocket);
+                OpenServerBefore?.Invoke(ServerSocket);
                 // 设置监听队列的长度；
                 ServerSocket.Listen(100);
                 // 创建负责监听的线程；
                 Thread Thread_ServerListen = new Thread(ListenConnecting);
                 Thread_ServerListen.IsBackground = true;
                 Thread_ServerListen.Start();
-                OpenServerAfter(ServerSocket);
+                OpenServerAfter?.Invoke(ServerSocket);
                 return true;
             }
             catch
@@ -312,7 +312,7 @@ namespace SpiderUtil.TCP_UDPHelper
         public void ReceivedAfterBegin()
         {
             //触发接收数据后的事件
-            ReceivedAfter(TcpSocket.RemoteEndPoint.ToString());
+            ReceivedAfter?.Invoke(TcpSocket.RemoteEndPoint.ToString());
         }
         public void AddEvent(ReceivedMessage receivedMessage)
         {
