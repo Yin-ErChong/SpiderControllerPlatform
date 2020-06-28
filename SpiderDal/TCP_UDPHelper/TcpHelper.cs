@@ -5,6 +5,7 @@ using System.Threading;
 using System.Net;
 using System.Text;
 using static SpiderUtil.TCP_UDPHelper.SocketDelegate;
+using Newtonsoft.Json;
 
 namespace SpiderUtil.TCP_UDPHelper
 {
@@ -257,9 +258,17 @@ namespace SpiderUtil.TCP_UDPHelper
         /// 发送数据
         /// </summary>
         /// <param name="sendMessage"></param>
-        public void Send(string sendMessage)
+        public void Send(object sendMessage)
         {
-            var bytes = Encoding.UTF8.GetBytes(sendMessage);
+            byte[] bytes;
+            if (sendMessage is string)
+            {
+                bytes = Encoding.UTF8.GetBytes((string)sendMessage);
+            }
+            else
+            {
+                bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(sendMessage));
+            }
             Send(bytes);
         }
         /// <summary>
