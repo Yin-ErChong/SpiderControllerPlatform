@@ -21,14 +21,7 @@ namespace SpiderCore
             tcpHelper.OpenServer(Configer.TCP_Port);
             tcpHelper.ReceivedAfter += Receive;
         }
-        public void TCP_PackageSplit(string ip_Port)
-        {
 
-        }
-        private void ClearBuffer()
-        {
-
-        }
         public void HeartBeat(MySession mySession)
         {
             mySession.Send("知道了");
