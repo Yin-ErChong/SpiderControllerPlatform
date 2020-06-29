@@ -235,6 +235,7 @@ namespace SpiderUtil.TCP_UDPHelper
     public class SocketDelegate
     {
         public delegate void ReceivedMessage(string ip_Port);
+        public delegate void SenddMessage(object data, MySession mySession);
         public delegate void OpenServerBefore(Socket socket);
         public delegate void OpenServerAfter(Socket socket);
     }
@@ -246,7 +247,8 @@ namespace SpiderUtil.TCP_UDPHelper
         public Socket TcpSocket;//socket对象
         
         public event ReceivedMessage ReceivedAfter;
-
+        public event SenddMessage SendBefore;
+        public event SenddMessage SendAfter;
         public string clientName { get; set; }
         public List<byte> m_Buffer = new List<byte>();//数据缓存区
 
@@ -260,6 +262,7 @@ namespace SpiderUtil.TCP_UDPHelper
         /// <param name="sendMessage"></param>
         public void Send(object sendMessage)
         {
+            SendBefore?.Invoke(sendMessage,this);
             byte[] bytes;
             if (sendMessage is string)
             {
@@ -270,6 +273,7 @@ namespace SpiderUtil.TCP_UDPHelper
                 bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(sendMessage));
             }
             Send(bytes);
+            SendAfter?.Invoke(sendMessage, this);
         }
         /// <summary>
         /// 发送数据

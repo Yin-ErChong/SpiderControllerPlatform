@@ -21,6 +21,12 @@ namespace SpiderCore
             tcpHelper.OpenServer(Configer.TCP_Port);
             tcpHelper.ReceivedAfter += Receive;
         }
+
+        public void HeartBeat(MySession mySession)
+        {
+            mySession.Send("知道了");
+            mySession.m_Buffer = new List<byte>();
+        }
         public void Receive(string ip_Port)
         {
             MySession mySession;
@@ -29,12 +35,19 @@ namespace SpiderCore
             {
                 return;
             }
+            string message= Encoding.UTF8.GetString(mySession.m_Buffer.ToArray());
+            if (message=="心跳")
+            {
+                HeartBeat(mySession);
+
+                return;
+            }
             TCP_Reponse<string> tCP_Reponse = new TCP_Reponse<string>();
             tCP_Reponse.ClientIp = mySession.TcpSocket.RemoteEndPoint.ToString();
             tCP_Reponse.ServerIp = mySession.TcpSocket.LocalEndPoint.ToString();
             tCP_Reponse.ServerName = "测试服务";
             tCP_Reponse.Data = $"Hello,服务端共有连接{tcpHelper.dic_ClientSocket.Count}个,分别为{string.Join(",", tcpHelper.dic_ClientSocket.Keys)}";
-            tCP_Reponse.ReceivedMessage = Encoding.UTF8.GetString(mySession.m_Buffer.ToArray());
+            tCP_Reponse.ReceivedMessage = message;
             mySession.Send(tCP_Reponse);
             mySession.m_Buffer = new List<byte>();
         }
