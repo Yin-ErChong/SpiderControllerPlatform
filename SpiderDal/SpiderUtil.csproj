@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="CacheHelper\**" />
+    <EmbeddedResource Remove="CacheHelper\**" />
+    <None Remove="CacheHelper\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.5" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
